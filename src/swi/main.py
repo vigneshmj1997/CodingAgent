@@ -8,9 +8,9 @@ from pydantic import BaseModel
 from rich.console import Console
 
 from langchain_core.messages import HumanMessage
-from swe.core.builder import CodingAgent
+from swi.core.builder import CodingAgent
 from dotenv import load_dotenv
-from swe.core.prompt import get_prompt
+from swi.core.prompt import get_prompt
 # Initialize Rich console for colored outputs
 console = Console()
 
@@ -55,25 +55,26 @@ async def run_graph():
     console.print("[bold green]Agent Ready![/bold green]")
 
     # Interactive input loop
-    config = {"configurable": {"thread_id": "1"},"recursionLimit": 100} 
+    config = {"configurable": {"thread_id": "1"}} 
     while True:
         text_input = input("> ").strip()
 
         if text_input.lower() == "exit":
             console.print("[red]Exiting agent...[/red]")
             break
-
+        
+        
         # Pass user input to agent 
-        async for type, content in graph.invoke(
+        async for type, content in graph.astream(
             input={"messages": HumanMessage(text_input), "context": get_prompt()},
             config=config,
             stream_mode=["messages","custom"],
+            kwargs = {"recursionLimit": 200}
             
         ):
-
+            
             if type == "messages":
                 content, metadata = content
-                print(metadata)
                 console.print(content.content, style="cyan", end="")
             else:
                 console.print(content, style="magenta")
@@ -85,8 +86,8 @@ async def run_graph():
 def main():
     # Run the asnc event loop
     try:
-        from swe.core.model import get_model
-        get_model()
+        from swi.utils.model import ModelLoader
+        ModelLoader().check()
     except Exception as e:  # noqa: F841
         console.print_exception() 
     asyncio.run(run_graph())

@@ -2,11 +2,12 @@ import os
 import re
 import glob
 import difflib
-from swe.core.const import NOTEPAD, IGNORE_LIST
+
 from langchain_core.tools import tool
 from langgraph.config import get_stream_writer
-from swe.helper import folder_tree
-from langgraph.types import interrupt
+from swi.utils.config import NOTEPAD
+from langgraph.types import  interrupt
+
 
 
 from enum import Enum
@@ -108,6 +109,10 @@ async def write_file_tool(code: str, path: str) -> str:
         os.makedirs(os.path.dirname(abs_path), exist_ok=True)
 
         # Write file
+        human_response = interrupt(f"Permission to Write {path}")
+        if not human_response.lower().find("y"):
+            return "User says not to read the file"
+        
         with open(abs_path, "w", encoding="utf-8") as f:
             f.write(code)
 
@@ -121,7 +126,7 @@ async def write_file_tool(code: str, path: str) -> str:
         return msg
 
     except IsADirectoryError as e:
-        msg = f"Expected file path but got directory: {path}"
+        msg = f"Expected file path but got directory: {path}: {e}"
         writer(msg)
         return msg
 
@@ -184,7 +189,11 @@ def edit_file(path: str, old_string: str, new_string: str, number_of_replacement
 
         msg = f"{abs_path}\n\nDiff:\n{diff}"
         writer(msg)
-    
+
+        # Write file
+        human_response = interrupt(f"Permission to Update {diff}")
+        if not human_response.lower().find("y"):
+            return "User says not to edit the file"
         # Write updated content
         with open(abs_path, "w", encoding="utf-8") as f:
             f.write(updated_content)
@@ -222,7 +231,8 @@ def get_folder_structure():
     Returns:
         str: Folder structure as a tree.
     """
-    folder_tree()
+    #folder_tree()
+    pass
     
 
 
@@ -235,5 +245,6 @@ def note_pad(str):
 
 
         
+
 
 

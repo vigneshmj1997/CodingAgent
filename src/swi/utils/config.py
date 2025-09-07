@@ -1,0 +1,3 @@
+ENV_FILE = ".env"
+
+NOTEPAD = ".NOTEPAD"

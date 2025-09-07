@@ -1,27 +1,23 @@
 from langgraph.graph import StateGraph, START
 from langgraph.prebuilt import ToolNode
-from swe.core.state import ContextState
-from swe.core.model import get_model
+from swi.utils.model import ModelLoader
 from langchain_core.messages import SystemMessage
-from swe.core.prompt import compress_prompt , get_prompt
+from swi.core.prompt import compress_prompt , get_prompt
 from langgraph.checkpoint.memory import InMemorySaver
 from rich.console import Console
 from typing import Literal
 from langgraph.types import Command
-from swe.core.tools import (
-    get_file_content,
-    write_file_tool,
-    edit_file,
-    get_folder_structure,
-    note_pad,
-    fetch_urls,
-    shell_tool,
-)
-
+from swi.core.tools.file_tool import get_file_content,edit_file, write_file_tool, note_pad
+from swi.core.tools.shell_tool import shell_tool
+from swi.core.tools.fetch_tool import fetch_url_content
+from langgraph.graph import MessagesState
 
 console = Console()
 
 checkpointer = InMemorySaver()
+
+class ContextState(MessagesState):
+    context: str
 
 
 class CodingAgent:
@@ -30,12 +26,11 @@ class CodingAgent:
             get_file_content,
             write_file_tool,
             edit_file,
-            get_folder_structure,
             note_pad,
-            fetch_urls,
+            fetch_url_content,
             shell_tool,
         ]
-        self.model = get_model()
+        self.model = ModelLoader().load()
 
     async def compress_context(self, state: ContextState):
         """Compress the Messages"""
@@ -70,6 +65,7 @@ class CodingAgent:
         response = self.model.bind_tools(self.tools).invoke(
             [SystemMessage(state.get("context", ""))] + state.get("messages", [])
         )
+        print(state.get("messages"))
         return {"messages": response}
 
     async def builder(self):

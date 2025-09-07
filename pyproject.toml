@@ -1,0 +1,19 @@
+[project]
+name = "swi"
+version = "0.1.0"
+description = "Coding Agent"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "dotenv>=0.9.9",
+    "langchain>=0.3.27",
+    "langchain-groq>=0.3.7",
+    "langchain-openai>=0.3.32",
+    "langgraph>=0.6.6",
+    "pyfiglet>=1.0.4",
+    "rich>=14.1.0",
+]
+
+[project.scripts]
+swi = "swi.main:main"
+

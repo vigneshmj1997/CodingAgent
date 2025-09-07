@@ -10,10 +10,6 @@ class SHELL(Enum):
     SHELL = "shell_tool"
     
 
-logger = logging.getLogger()
-
-
-
 @tool
 async def shell_tool(command: str) -> str:
     """
